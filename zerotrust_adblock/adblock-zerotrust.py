@@ -15,12 +15,9 @@ def get_blocklists():
     return blocklists
 
 def apply_whitelists(blocklists):
-    for filename in os.listdir('./whitelists'):
-        with open(os.path.join('./whitelists', filename), 'r') as f:
-            whitelist = f.readlines()
-        whitelist = [x.strip() for x in whitelist]
+        whitelist = utils.convert_to_list(pathlib.Path(__file__).parent.parent.joinpath('whitelist.txt'))
         blocklists = [x for x in blocklists if x not in whitelist]
-    return blocklists
+        return blocklists
 
 def split_list(blocklists):
     lists = []
