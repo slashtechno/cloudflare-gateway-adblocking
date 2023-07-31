@@ -1,6 +1,6 @@
 import os
 import requests
-import utils
+import utils.utils
 import pathlib
 
 # Load environment variables

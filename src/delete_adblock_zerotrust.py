@@ -1,7 +1,7 @@
 # This is a scriprt to undo the changes made by adblock-zerotrust.py
 
 import requests
-import utils
+import utils.utils
 
 # Load environment variables
 TOKEN = utils.load_env()["CLOUDFLARE_TOKEN"]
