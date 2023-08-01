@@ -3,17 +3,20 @@ import utils
 import pathlib
 
 
-def get_blocklists():
+def get_blocklists(path_to_blocklists: str = None):
     # __file__ is a special variable that is the path to the current file
-    list_directory = pathlib.Path(__file__).parent.parent.joinpath("blocklists")
+    # list_directory = pathlib.Path(__file__).parent.parent.joinpath("blocklists")
+
+    list_directory = pathlib.Path(path_to_blocklists)
     for file in list_directory.iterdir():
         blocklists = utils.convert_to_list(file)
     return blocklists
 
 
-def apply_whitelists(blocklists):
+def apply_whitelists(blocklists, whitelist: str = None):
     whitelist = utils.convert_to_list(
-        pathlib.Path(__file__).parent.parent.joinpath("whitelist.txt")
+        # pathlib.Path(__file__).parent.parent.joinpath("whitelist.txt")
+        pathlib.Path(whitelist)
     )
     blocklists = [x for x in blocklists if x not in whitelist]
     return blocklists
