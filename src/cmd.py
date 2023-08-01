@@ -103,19 +103,19 @@ def cli():
 def upload_to_cloudflare(args):
     logger.info("Uploading to Cloudflare")
     blocklists = utils.utils.get_blocklists(args.blocklists)
-    blocklists = utils.adblock_zerotrust.apply_whitelists(blocklists, args.whitelists)
-    lists = utils.adblock_zerotrust.split_list(blocklists)
-    utils.adblock_zerotrust.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN)
+    blocklists = utils.upload.apply_whitelists(blocklists, args.whitelists)
+    lists = utils.upload.split_list(blocklists)
+    utils.upload.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN)
     cloud_lists = utils.utils.get_lists(ACCOUNT_ID, TOKEN)
     cloud_lists = utils.utils.filter_adblock_lists(cloud_lists)
-    utils.adblock_zerotrust.create_dns_policy(cloud_lists, ACCOUNT_ID, TOKEN)
+    utils.upload.create_dns_policy(cloud_lists, ACCOUNT_ID, TOKEN)
 def delete_from_cloudflare(args):
     logger.info("Deleting from Cloudflare")
     rules = utils.utils.get_gateway_rules(ACCOUNT_ID, TOKEN)
-    utils.delete_adblock_zerotrust.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
+    utils.delete.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
     lists = utils.utils.get_lists(ACCOUNT_ID, TOKEN)
     lists = utils.utils.filter_adblock_lists(lists)
-    utils.delete_adblock_zerotrust.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
+    utils.delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
 
 if __name__ == "__main__":
     cli()
