@@ -1,11 +1,6 @@
-import os
 import requests
-import utils.utils
+import utils
 import pathlib
-
-# Load environment variables
-TOKEN = utils.load_env()["CLOUDFLARE_TOKEN"]
-ACCOUNT_ID = utils.load_env()["CLOUDFLARE_ACCOUNT_ID"]
 
 
 def get_blocklists():
@@ -35,15 +30,15 @@ def split_list(blocklists):
     return lists
 
 
-def upload_to_cloudflare(lists):
+def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
     # A: It's iterating over the lists and uploading them to Cloudflare, the enumerate function is used to get the index of the list since lists is a list of lists
     for i, lst in enumerate(lists):
         list_name = f"adblock-list-{i + 1}"
         url = (
-            f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/gateway/lists"
+            f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists"
         )
         headers = {
-            "Authorization": f"Bearer {TOKEN}",
+            "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
 
@@ -65,10 +60,10 @@ def upload_to_cloudflare(lists):
             print(f"Error uploading {list_name}: {response.text}")
 
 
-def create_dns_policy(lists):
-    url = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/gateway/rules"
+def create_dns_policy(lists, account_id: str, token: str) -> None:
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/rules"
     headers = {
-        "Authorization": f"Bearer {TOKEN}",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
     # Construct the traffic string

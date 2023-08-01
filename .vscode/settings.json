@@ -1,0 +1,4 @@
+{
+    "python.languageServer": "Pylance",
+    "python.analysis.ignore": [ "*" ] // Ruff is used for linting but Pylance still is useful
+}

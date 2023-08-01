@@ -2,3 +2,7 @@
 __pycache__/
 tmp.txt
 .env
+blocklists/*
+!blocklists/.gitkeep
+tmp.py
+.venv

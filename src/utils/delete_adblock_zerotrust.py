@@ -1,18 +1,14 @@
 # This is a scriprt to undo the changes made by adblock-zerotrust.py
 
 import requests
-import utils.utils
-
-# Load environment variables
-TOKEN = utils.load_env()["CLOUDFLARE_TOKEN"]
-ACCOUNT_ID = utils.load_env()["CLOUDFLARE_ACCOUNT_ID"]
+import utils
 
 
-def delete_adblock_list(lists: dict):
+def delete_adblock_list(lists: dict, account_id: str, token: str):
     for lst in lists:
-        url = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/gateway/lists/{lst["id"]}'
+        url = f'https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists/{lst["id"]}'
         headers = {
-            "Authorization": f"Bearer {TOKEN}",
+            "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
         response = requests.delete(url, headers=headers, timeout=10)
@@ -22,12 +18,12 @@ def delete_adblock_list(lists: dict):
             print(f'Deleted list {lst["name"]}')
 
 
-def delete_adblock_policy(policies: dict):
+def delete_adblock_policy(policies: dict, account_id: str, token: str):
     for policy in policies:
         if policy["name"] == "Block Ads":
-            url = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/gateway/rules/{policy["id"]}'
+            url = f'https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/rules/{policy["id"]}'
             headers = {
-                "Authorization": f"Bearer {TOKEN}",
+                "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json",
             }
             response = requests.delete(url, headers=headers, timeout=10)
