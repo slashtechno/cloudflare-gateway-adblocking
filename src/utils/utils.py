@@ -4,6 +4,7 @@ import pathlib
 import requests
 from dotenv import load_dotenv
 
+
 class Config:
     def __init__(self, token, account_id):
         # Set token using setter
@@ -14,28 +15,31 @@ class Config:
     @property
     def token(self):
         return self._token
+
     @token.setter
     def token(self, token):
         if token is None:
             raise ValueError("No token provided")
         else:
-            url = 'https://api.cloudflare.com/client/v4/user/tokens/verify'
+            url = "https://api.cloudflare.com/client/v4/user/tokens/verify"
             headers = {
-                'Authorization': f'Bearer {token}',
-                'Content-Type': 'application/json'
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
             }
             response = requests.get(url, headers=headers, timeout=10)
-            if response.json()['success'] is False:
-                raise ValueError('Invalid token')
+            if response.json()["success"] is False:
+                raise ValueError("Invalid token")
             else:
                 # Token needs the following scopes:
                 # Zero Trust: Read/Edit
                 # Account Firewall Access Rules: Read/Edit
-                # Access Apps and Policies: Read/Edit 
-                self._token = token 
+                # Access Apps and Policies: Read/Edit
+                self._token = token
+
     @property
     def account_id(self):
         return self._account_id
+
     @account_id.setter
     def account_id(self, account_id):
         if account_id is None:
@@ -44,10 +48,7 @@ class Config:
             # Possibly make a request to lists to check if the account ID exists
             self._account_id = account_id
 
-            
-            
-            
-        
+
 # List Utils
 
 
@@ -55,8 +56,8 @@ class Config:
 def convert_to_list(file: pathlib.Path) -> list:
     with open(file, "r") as f:
         # Don't read commented lines; strip whitespace;
-        #  remove 127.0.0.1 from beginning of line; 
-        # ignore lines with "localhost"; ignore lines with "::1"; 
+        #  remove 127.0.0.1 from beginning of line;
+        # ignore lines with "localhost"; ignore lines with "::1";
         # ignore newlines
         hosts = [
             i[10:].strip()
@@ -67,35 +68,14 @@ def convert_to_list(file: pathlib.Path) -> list:
         # for x in f.readlines():
         #     if not x.startswith('#') and 'localhost' not in x and '::1' not in x:
         #         hosts.append(x[10:].strip())
-        
-        # If there are any empty strings in the list, remove them 
-        # For some reason, whitelist seems to still be present 
+
+        # If there are any empty strings in the list, remove them
+        # For some reason, whitelist seems to still be present
         hosts = [i for i in hosts if i != ""]
         return hosts
 
 
 # General Utils
-
-
-# Load environment variables
-# def load_env() -> dict:
-#     load_dotenv(".env")
-#     if not os.environ.get("CLOUDFLARE_TOKEN") and not os.environ.get(
-#         "CLOUDFLARE_ACCOUNT_ID"
-#     ):
-#         load_dotenv(".envrc")
-#     if not os.environ.get("CLOUDFLARE_TOKEN") or not os.environ.get(
-#         "CLOUDFLARE_ACCOUNT_ID"
-#     ):
-#         print(
-#             "No environment variables found. Please create a .env file or .envrc file"
-#         )
-#         exit()
-#     else:
-#         return {
-#             "CLOUDFLARE_TOKEN": os.environ.get("CLOUDFLARE_TOKEN"),
-#             "CLOUDFLARE_ACCOUNT_ID": os.environ.get("CLOUDFLARE_ACCOUNT_ID"),
-#         }
 
 
 def get_lists(account_id, token) -> dict:
@@ -112,9 +92,15 @@ def get_lists(account_id, token) -> dict:
 
 def filter_adblock_lists(lists: dict) -> dict:
     adblock_lists = []
-    for lst in lists:
-        if lst["name"].startswith("adblock-list") and lst["type"] == "DOMAIN":
-            adblock_lists.append(lst)
+    try:
+        for lst in lists:
+            if lst["name"].startswith("adblock-list") and lst["type"] == "DOMAIN":
+                adblock_lists.append(lst)
+    except TypeError as e:
+        if str(e) == "'NoneType' object is not iterable":
+            print("No lists found")
+        else:
+            raise e
     return adblock_lists
 
 

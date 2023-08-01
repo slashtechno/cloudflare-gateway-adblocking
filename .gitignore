@@ -7,3 +7,4 @@ blocklists/*
 tmp.py
 .venv
 dist/
+.ruff_cache/

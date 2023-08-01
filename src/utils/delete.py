@@ -5,17 +5,23 @@ from . import utils
 
 
 def delete_adblock_list(lists: dict, account_id: str, token: str):
-    for lst in lists:
-        url = f'https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists/{lst["id"]}'
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        }
-        response = requests.delete(url, headers=headers, timeout=10)
-        if response.status_code != 200:
-            print(f"Error deleting list: {response.text}")
+    try:
+        for lst in lists:
+            url = f'https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists/{lst["id"]}'
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            }
+            response = requests.delete(url, headers=headers, timeout=10)
+            if response.status_code != 200:
+                print(f"Error deleting list: {response.text}")
+            else:
+                print(f'Deleted list {lst["name"]}')
+    except TypeError as e:
+        if str(e) == "'NoneType' object is not iterable":
+            print("No lists found")
         else:
-            print(f'Deleted list {lst["name"]}')
+            raise e
 
 
 def delete_adblock_policy(policies: dict, account_id: str, token: str):

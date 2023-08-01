@@ -3,21 +3,32 @@ from . import utils
 import pathlib
 
 
-def get_blocklists(path_to_blocklists: str = None):
-    # __file__ is a special variable that is the path to the current file
-    # list_directory = pathlib.Path(__file__).parent.parent.joinpath("blocklists")
-
-    list_directory = pathlib.Path(path_to_blocklists)
-    for file in list_directory.iterdir():
-        blocklists = utils.convert_to_list(file)
+def get_blocklists(hosts_path: str = None):
+    blocklists = []
+    hosts_path = pathlib.Path(hosts_path)
+    if hosts_path.is_file():
+        blocklists = utils.convert_to_list(hosts_path)
+    elif hosts_path.is_dir():
+        for file in hosts_path.iterdir():
+            blocklists.extend(utils.convert_to_list(file))
+    else:
+        raise ValueError("Invalid hosts file or directory")
     return blocklists
 
 
 def apply_whitelists(blocklists, whitelist: str = None):
-    whitelist = utils.convert_to_list(
-        # pathlib.Path(__file__).parent.parent.joinpath("whitelist.txt")
-        pathlib.Path(whitelist)
-    )
+    # If whitelist is a file, convert it to a list.
+    # If whitelist is a directory, convert all files in it to a list and combine them.
+    # If it does not exist, return the original blocklists
+    whitelist_path = pathlib.Path(whitelist)
+    if whitelist_path.is_file():
+        whitelist = utils.convert_to_list(whitelist_path)
+    elif whitelist_path.is_dir():
+        whitelist = []
+        for file in whitelist_path.iterdir():
+            whitelist.extend(utils.convert_to_list(file))
+    else:
+        return blocklists
     blocklists = [x for x in blocklists if x not in whitelist]
     return blocklists
 
@@ -28,7 +39,7 @@ def split_list(blocklists):
         [blocklists[i : i + 1000] for i in range(0, len(blocklists), 1000)]
     )  # This is the same as the for loop below
     # for i in range(0, len(blocklists), 1000):
-    #     # This is appending a list of 1000 domains to the lists list. It is doing this by slicing the blocklists list to get the first 1000 domains, then the next 1000 domains, etc.
+    # This continues to append lists of 1000 items to the lists list via slicing
     #     lists.append(blocklists[i:i + 1000])
     return lists
 
@@ -97,6 +108,7 @@ def main():
     cloud_lists = utils.get_lists()
     cloud_lists = utils.filter_adblock_lists(cloud_lists)
     create_dns_policy(cloud_lists)
+
 
 if __name__ == "__main__":
     main()

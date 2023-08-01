@@ -5,6 +5,9 @@ description = "Serverless adblocking via Cloudflare Zero Trust Gateway"
 authors = ["slastechno <77907286+slashtechno@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/slashtechno/cloudflare-gateway-adblocking"
+keywords = ["cloudflare", "dns", "adblocking", "serverless"]
+
 packages = [{include = "src"}]
 
 [tool.poetry.scripts]
@@ -19,6 +22,7 @@ python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.281"
+black = "^23.7.0"
 
 [build-system]
 requires = ["poetry-core"]
