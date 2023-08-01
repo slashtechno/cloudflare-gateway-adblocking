@@ -1,6 +1,9 @@
+# To run from the root project directory, run the following command:
+# python -m src.__main__
 from loguru import logger 
 # Import the utils package
 from . import utils
+# import utils
 
 import argparse
 import os
@@ -102,10 +105,11 @@ def main():
         args.func(args)
     except AttributeError:
         argparser.print_help()
+        pass
 
 def upload_to_cloudflare(args):
     logger.info("Uploading to Cloudflare")
-    blocklists = utils.utils.get_blocklists(args.blocklists)
+    blocklists = utils.upload.get_blocklists(args.blocklists)
     blocklists = utils.upload.apply_whitelists(blocklists, args.whitelists)
     lists = utils.upload.split_list(blocklists)
     utils.upload.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN)
