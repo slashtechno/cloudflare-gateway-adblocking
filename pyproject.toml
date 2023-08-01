@@ -5,7 +5,10 @@ description = "Serverless adblocking via Cloudflare Zero Trust Gateway"
 authors = ["slastechno <77907286+slashtechno@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "src"}]
+packages = [{include = "cloudflare_gateway_adblocking"}]
+
+[tool.poetry.scripts]
+cloudflare-gateway-adblocking = "cloudflare_gateway_adblocking.__main__:cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"

@@ -112,10 +112,10 @@ def upload_to_cloudflare(args):
 def delete_from_cloudflare(args):
     logger.info("Deleting from Cloudflare")
     rules = utils.utils.get_gateway_rules(ACCOUNT_ID, TOKEN)
-    utils.delete.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
+    utils.delete_adblock_zerotrust.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
     lists = utils.utils.get_lists(ACCOUNT_ID, TOKEN)
     lists = utils.utils.filter_adblock_lists(lists)
-    utils.delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
+    utils.delete_adblock_zerotrust.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
 
 if __name__ == "__main__":
     cli()
