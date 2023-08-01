@@ -1,9 +1,7 @@
 # To run from the root project directory, run the following command:
 # python -m src.__main__
 from loguru import logger 
-# Import the utils package
-from . import utils
-# import utils
+from .utils import upload, delete, utils
 
 import argparse
 import os
@@ -103,26 +101,26 @@ def main():
         exit(1)
     try :
         args.func(args)
-    except AttributeError:
+    except AttributeError as e:
+        logger.debug(e)
         argparser.print_help()
-        pass
 
 def upload_to_cloudflare(args):
     logger.info("Uploading to Cloudflare")
-    blocklists = utils.upload.get_blocklists(args.blocklists)
-    blocklists = utils.upload.apply_whitelists(blocklists, args.whitelists)
-    lists = utils.upload.split_list(blocklists)
-    utils.upload.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN)
-    cloud_lists = utils.utils.get_lists(ACCOUNT_ID, TOKEN)
-    cloud_lists = utils.utils.filter_adblock_lists(cloud_lists)
-    utils.upload.create_dns_policy(cloud_lists, ACCOUNT_ID, TOKEN)
+    blocklists = upload.get_blocklists(args.blocklists)
+    blocklists = upload.apply_whitelists(blocklists, args.whitelists)
+    lists = upload.split_list(blocklists)
+    upload.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN)
+    cloud_lists = utils.get_lists(ACCOUNT_ID, TOKEN)
+    cloud_lists = utils.filter_adblock_lists(cloud_lists)
+    upload.create_dns_policy(cloud_lists, ACCOUNT_ID, TOKEN)
 def delete_from_cloudflare(args):
     logger.info("Deleting from Cloudflare")
-    rules = utils.utils.get_gateway_rules(ACCOUNT_ID, TOKEN)
-    utils.delete.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
-    lists = utils.utils.get_lists(ACCOUNT_ID, TOKEN)
-    lists = utils.utils.filter_adblock_lists(lists)
-    utils.delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
+    rules = utils.get_gateway_rules(ACCOUNT_ID, TOKEN)
+    delete.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
+    lists = utils.get_lists(ACCOUNT_ID, TOKEN)
+    lists = utils.filter_adblock_lists(lists)
+    delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
 
 if __name__ == "__main__":
     main()

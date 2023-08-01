@@ -98,6 +98,5 @@ def main():
     cloud_lists = utils.filter_adblock_lists(cloud_lists)
     create_dns_policy(cloud_lists)
 
-
 if __name__ == "__main__":
     main()
