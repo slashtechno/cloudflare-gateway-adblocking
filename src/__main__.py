@@ -1,6 +1,6 @@
 from loguru import logger 
 # Import the utils package
-import utils
+from . import utils
 
 import argparse
 import os
@@ -11,7 +11,7 @@ from pathlib import Path
 TOKEN = None
 ACCOUNT_ID = None
 
-def cli():
+def main():
     # Setup logging
     logger.remove()
     # ^10 is a formatting directive to center with a padding of 10
@@ -98,7 +98,10 @@ def cli():
     if TOKEN is None or ACCOUNT_ID is None:
         logger.error("No environment variables found. Please create a .env file or .envrc file") # noqa E501
         exit(1)
-    args.func(args)
+    try :
+        args.func(args)
+    except AttributeError:
+        argparser.print_help()
 
 def upload_to_cloudflare(args):
     logger.info("Uploading to Cloudflare")
@@ -112,10 +115,10 @@ def upload_to_cloudflare(args):
 def delete_from_cloudflare(args):
     logger.info("Deleting from Cloudflare")
     rules = utils.utils.get_gateway_rules(ACCOUNT_ID, TOKEN)
-    utils.delete_adblock_zerotrust.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
+    utils.delete.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
     lists = utils.utils.get_lists(ACCOUNT_ID, TOKEN)
     lists = utils.utils.filter_adblock_lists(lists)
-    utils.delete_adblock_zerotrust.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
+    utils.delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
 
 if __name__ == "__main__":
-    cli()
+    main()

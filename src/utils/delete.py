@@ -1,7 +1,7 @@
 # This is a scriprt to undo the changes made by adblock-zerotrust.py
 
 import requests
-import utils
+from . import utils
 
 
 def delete_adblock_list(lists: dict, account_id: str, token: str):

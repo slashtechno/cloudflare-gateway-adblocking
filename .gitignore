@@ -6,4 +6,4 @@ blocklists/*
 !blocklists/.gitkeep
 tmp.py
 .venv
-testtmp
+dist/

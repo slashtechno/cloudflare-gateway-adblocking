@@ -1,5 +1,5 @@
 import requests
-import utils
+from . import utils
 import pathlib
 
 
