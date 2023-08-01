@@ -75,7 +75,7 @@ def main():
     upload_parser.add_argument(
         "--whitelists",
         "-w",
-        help="Either a whitelist hosts file or a directory containing whitelist hosts files", # noqa E501
+        help="Either a whitelist hosts file or a directory containing whitelist hosts files",  # noqa E501
         default="whitelist.txt",  # Need to change this so it's optional
     )
     # Add subcommand: delete

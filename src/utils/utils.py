@@ -1,8 +1,6 @@
-import os
 import pathlib
 
 import requests
-from dotenv import load_dotenv
 
 
 class Config:

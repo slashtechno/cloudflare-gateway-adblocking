@@ -45,7 +45,6 @@ def split_list(blocklists):
 
 
 def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
-    # A: It's iterating over the lists and uploading them to Cloudflare, the enumerate function is used to get the index of the list since lists is a list of lists
     for i, lst in enumerate(lists):
         list_name = f"adblock-list-{i + 1}"
         url = (
