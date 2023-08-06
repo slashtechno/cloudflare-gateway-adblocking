@@ -1,26 +1,36 @@
-import os
 import pathlib
 
 import requests
-import utils
 
-# Load environment variables
-TOKEN = utils.load_env()["CLOUDFLARE_TOKEN"]
-ACCOUNT_ID = utils.load_env()["CLOUDFLARE_ACCOUNT_ID"]
+from . import utils
 
 
-def get_blocklists():
-    # __file__ is a special variable that is the path to the current file
-    list_directory = pathlib.Path(__file__).parent.parent.joinpath("blocklists")
-    for file in list_directory.iterdir():
-        blocklists = utils.convert_to_list(file)
+def get_blocklists(hosts_path: str = "blocklists"):
+    blocklists = []
+    hosts_path = pathlib.Path(hosts_path)
+    if hosts_path.is_file():
+        blocklists = utils.convert_to_list(hosts_path)
+    elif hosts_path.is_dir():
+        for file in hosts_path.iterdir():
+            blocklists.extend(utils.convert_to_list(file))
+    else:
+        raise ValueError("Invalid hosts file or directory")
     return blocklists
 
 
-def apply_whitelists(blocklists):
-    whitelist = utils.convert_to_list(
-        pathlib.Path(__file__).parent.parent.joinpath("whitelist.txt")
-    )
+def apply_whitelists(blocklists, whitelist: str = "whitelists"):
+    # If whitelist is a file, convert it to a list.
+    # If whitelist is a directory, convert all files in it to a list and combine them.
+    # If it does not exist, return the original blocklists
+    whitelist_path = pathlib.Path(whitelist)
+    if whitelist_path.is_file():
+        whitelist = utils.convert_to_list(whitelist_path)
+    elif whitelist_path.is_dir():
+        whitelist = []
+        for file in whitelist_path.iterdir():
+            whitelist.extend(utils.convert_to_list(file))
+    else:
+        return blocklists
     blocklists = [x for x in blocklists if x not in whitelist]
     return blocklists
 
@@ -31,20 +41,19 @@ def split_list(blocklists):
         [blocklists[i : i + 1000] for i in range(0, len(blocklists), 1000)]
     )  # This is the same as the for loop below
     # for i in range(0, len(blocklists), 1000):
-    #     # This is appending a list of 1000 domains to the lists list. It is doing this by slicing the blocklists list to get the first 1000 domains, then the next 1000 domains, etc.
+    # This continues to append lists of 1000 items to the lists list via slicing
     #     lists.append(blocklists[i:i + 1000])
     return lists
 
 
-def upload_to_cloudflare(lists):
-    # A: It's iterating over the lists and uploading them to Cloudflare, the enumerate function is used to get the index of the list since lists is a list of lists
+def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
     for i, lst in enumerate(lists):
         list_name = f"adblock-list-{i + 1}"
         url = (
-            f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/gateway/lists"
+            f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists"
         )
         headers = {
-            "Authorization": f"Bearer {TOKEN}",
+            "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
 
@@ -66,10 +75,10 @@ def upload_to_cloudflare(lists):
             print(f"Error uploading {list_name}: {response.text}")
 
 
-def create_dns_policy(lists):
-    url = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/gateway/rules"
+def create_dns_policy(lists, account_id: str, token: str) -> None:
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/rules"
     headers = {
-        "Authorization": f"Bearer {TOKEN}",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
     # Construct the traffic string
@@ -93,13 +102,16 @@ def create_dns_policy(lists):
 
 
 def main():
+    account_id = input("Enter your Cloudflare account ID: ")
+    token = input("Enter your Cloudflare API token: ")
+
     blocklists = get_blocklists()
     blocklists = apply_whitelists(blocklists)
     lists = split_list(blocklists)
-    upload_to_cloudflare(lists)
-    cloud_lists = utils.get_lists()
+    upload_to_cloudflare(lists, account_id, token)
+    cloud_lists = utils.get_lists(account_id, token)
     cloud_lists = utils.filter_adblock_lists(cloud_lists)
-    create_dns_policy(cloud_lists)
+    create_dns_policy(cloud_lists, account_id, token)
 
 
 if __name__ == "__main__":

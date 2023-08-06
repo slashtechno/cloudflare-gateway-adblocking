@@ -1,0 +1,10 @@
+{
+    "python.languageServer": "Pylance", // Ruff is used for linting but Pylance still is useful for intellisense
+    "python.analysis.ignore": [
+        "*"
+    ],
+    "python.analysis.exclude": [
+        "."
+    ],
+    "python.linting.enabled": false // https://github.com/microsoft/vscode-python/wiki/Migration-to-Python-Tools-Extensions
+}

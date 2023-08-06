@@ -2,3 +2,10 @@
 __pycache__/
 tmp.txt
 .env
+blocklists/*
+!blocklists/.gitkeep
+tmp.py
+.venv
+dist/
+.ruff_cache/
+hosts.txt
