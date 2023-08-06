@@ -102,8 +102,9 @@ def main():
     try:
         args.func(args)
     except AttributeError as e:
-        logger.debug(e)
+        logger.error("No subcommand specified")
         argparser.print_help()
+        exit(1)
 
 
 def upload_to_cloudflare(args):

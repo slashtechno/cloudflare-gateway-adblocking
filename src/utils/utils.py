@@ -1,5 +1,5 @@
 import pathlib
-
+import re
 import requests
 
 
@@ -53,23 +53,34 @@ class Config:
 # Convert a hosts file to a simple hostname list
 def convert_to_list(file: pathlib.Path) -> list:
     with open(file, "r") as f:
-        # Don't read commented lines; strip whitespace;
-        #  remove 127.0.0.1 from beginning of line;
-        # ignore lines with "localhost"; ignore lines with "::1";
-        # ignore newlines
-        hosts = [
-            i[10:].strip()
-            for i in f.readlines()
-            if not i.startswith("#") and "localhost" not in i and "::1" not in i
+        # Loop through the file and using regex, only get the domain names
+        # Remove the prefixed loopback domain and suffixed comments
+        # Remove any empty strings
+        loopback = [
+            "localhost",
+            "::1",
+            "localhost.localdomain",
+            "broadcasthost",
+            "local",
+            "ip6-localhost",
+            "ip6-loopback",
+            "ip6-localnet",
+            "ip6-mcastprefix",
+            "ip6-allnodes",
+            "ip6-allrouters",
+            "ip6-allhosts",
+            "0.0.0.0",
         ]
-        # Equivalent to:
-        # for x in f.readlines():
-        #     if not x.startswith('#') and 'localhost' not in x and '::1' not in x:
-        #         hosts.append(x[10:].strip())
-
-        # If there are any empty strings in the list, remove them
-        # For some reason, whitelist seems to still be present
-        hosts = [i for i in hosts if i != ""]
+        matches = [
+            re.search(r"^(?:127\.0\.0\.1|0\.0\.0\.0|::1)\s+(.+?)(?:\s+#.+)?$", line)
+            for line in f
+        ]
+        hosts = [
+            match.group(1)
+            for match in matches
+            if match and match.group(1) not in loopback
+        ]
+        print(f"First 5 hosts: {hosts[:5]}")
         return hosts
 
 
