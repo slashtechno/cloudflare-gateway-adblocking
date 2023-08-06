@@ -1,7 +1,8 @@
 import os
+import pathlib
+
 import requests
 import utils
-import pathlib
 
 # Load environment variables
 TOKEN = utils.load_env()["CLOUDFLARE_TOKEN"]
