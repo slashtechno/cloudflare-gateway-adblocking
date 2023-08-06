@@ -19,21 +19,19 @@ class Config:
     def token(self, token):
         if token is None:
             raise ValueError("No token provided")
-        else:
-            url = "https://api.cloudflare.com/client/v4/user/tokens/verify"
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-            }
-            response = requests.get(url, headers=headers, timeout=10)
-            if response.json()["success"] is False:
-                raise ValueError("Invalid token")
-            else:
-                # Token needs the following scopes:
-                # Zero Trust: Read/Edit
-                # Account Firewall Access Rules: Read/Edit
-                # Access Apps and Policies: Read/Edit
-                self._token = token
+        url = "https://api.cloudflare.com/client/v4/user/tokens/verify"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.json()["success"] is False:
+            raise ValueError("Invalid token")
+        # Token needs the following scopes:
+        # Zero Trust: Read/Edit
+        # Account Firewall Access Rules: Read/Edit
+        # Access Apps and Policies: Read/Edit
+        self._token = token
 
     @property
     def account_id(self):
@@ -43,9 +41,8 @@ class Config:
     def account_id(self, account_id):
         if account_id is None:
             raise ValueError("No account ID provided")
-        else:
-            # Possibly make a request to lists to check if the account ID exists
-            self._account_id = account_id
+        # Possibly make a request to lists to check if the account ID exists
+        self._account_id = account_id
 
 
 # List Utils
