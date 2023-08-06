@@ -72,7 +72,7 @@ def main():
         "--blocklists",
         "-b",
         help="Either a blocklist hosts file or a directory containing blocklist hosts files",  # noqa E501
-        default="blocklists", # Not really needed because the get_blocklists function will default to this  # noqa: E501
+        default="blocklists",  # Not really needed because the get_blocklists function will default to this  # noqa: E501
     )
     upload_parser.add_argument(
         "--whitelists",
