@@ -1,6 +1,8 @@
-import requests
-from . import utils
 import pathlib
+
+import requests
+
+from . import utils
 
 
 def get_blocklists(hosts_path: str = None):

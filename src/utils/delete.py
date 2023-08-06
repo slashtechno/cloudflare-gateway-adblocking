@@ -1,6 +1,7 @@
 # This is a scriprt to undo the changes made by adblock-zerotrust.py
 
 import requests
+
 from . import utils
 
 

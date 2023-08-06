@@ -1,13 +1,14 @@
 # To run from the root project directory, run the following command:
 # python -m src.__main__
-from loguru import logger
-from .utils import upload, delete, utils
-
 import argparse
 import os
-import dotenv
-from sys import exit, stderr
 from pathlib import Path
+from sys import exit, stderr
+
+import dotenv
+from loguru import logger
+
+from .utils import delete, upload, utils
 
 TOKEN = None
 ACCOUNT_ID = None
