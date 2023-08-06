@@ -103,7 +103,7 @@ def main():
         exit(1)
     try:
         args.func(args)
-    except AttributeError as e:
+    except AttributeError:
         logger.error("No subcommand specified")
         argparser.print_help()
         exit(1)

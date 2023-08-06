@@ -67,7 +67,7 @@ def convert_to_list(file: pathlib.Path) -> list:
             "ip6-allnodes",
             "ip6-allrouters",
             "ip6-allhosts",
-            "0.0.0.0",
+            "0.0.0.0",  # skipcq: BAN-B104
         ]
         matches = [
             re.search(r"^(?:127\.0\.0\.1|0\.0\.0\.0|::1)\s+(.+?)(?:\s+#.+)?$", line)
