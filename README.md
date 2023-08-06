@@ -6,7 +6,7 @@ This is a serverless adblocking solution that uses Cloudflare's Zero Trust Gatew
 This project was heavily inspired by [this blog post](https://blog.marcolancini.it/2022/blog-serverless-ad-blocking-with-cloudflare-gateway/)  
 
 
-### Pre-requisites
+### Prerequisites
 * Python > 3.10  
 * A Cloudflare account with Zero Trust enabled  
 * A Cloudflare API tolken with the following permissions:  
@@ -15,11 +15,11 @@ This project was heavily inspired by [this blog post](https://blog.marcolancini.
     * Access: Apps and Policies: Edit  
 * A device with the WARP client installed and configured to use a Zero Trust account  
 
-<!-- 
+
 ### Installation  
 #### From PyPi  
-`pip install cloudflare-gateway-adblocking`
- -->
+`pip install cloudflare-gateway-adblocking`  
+
 
 ### Usage   
 #### Setting Cloudflare credentials  
