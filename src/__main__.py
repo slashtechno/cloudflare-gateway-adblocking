@@ -1,5 +1,6 @@
 # To run from the root project directory, run the following command:
 # python -m src.__main__
+# python -m src # also works because __main__ is the default module
 import argparse
 import os
 from pathlib import Path
@@ -71,13 +72,13 @@ def main():
         "--blocklists",
         "-b",
         help="Either a blocklist hosts file or a directory containing blocklist hosts files",  # noqa E501
-        default="blocklists",
+        default="blocklists", # Not really needed because the get_blocklists function will default to this  # noqa: E501
     )
     upload_parser.add_argument(
         "--whitelists",
         "-w",
         help="Either a whitelist hosts file or a directory containing whitelist hosts files",  # noqa E501
-        default="whitelist.txt",  # Need to change this so it's optional
+        default="whitelist.txt",  # Not really needed because the apply_whitelists function will default to this  # noqa: E501
     )
     # Add subcommand: delete
     delete_parser = subparsers.add_parser(

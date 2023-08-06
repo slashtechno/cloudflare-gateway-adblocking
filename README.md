@@ -34,6 +34,8 @@ The following command line flags can be used to set the Cloudflare credentials:
 * Cloudflare Token: `--token` / `-t`  
 #### Passing blocklists  
 Blocklists can be passed to the program via the command line flag `--blocklist` / `-b`. This flag can either point to a hosts file or a directory containing hosts files. If this flag is not passed, the program will look for a file or directory named `blocklists` in the current working directory.  
+# Passing whitelists  
+Whitelists can be passed to the program via the command line flag `--whitelist` / `-w`. This flag can either point to a hosts file or a directory containing hosts files. If this flag is not passed, then if a file or directory named `whitelists` exists in the current working directory, it will be used. Domains in this whitelist will be excluded from the blocklists.  
 #### Uploading blocklists and creating a firewall policy
 To upload the blocklists to Cloudflare and create a firewall policy, use the `upload` subcommand.  
 For example:  

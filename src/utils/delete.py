@@ -44,11 +44,14 @@ def delete_adblock_policy(policies: dict, account_id: str, token: str):
 
 
 def main():
-    rules = utils.get_gateway_rules()
-    delete_adblock_policy(rules)
-    lists = utils.get_lists()
+    account_id = input("Enter your Cloudflare account ID: ")
+    token = input("Enter your Cloudflare API token: ")
+    
+    rules = utils.get_gateway_rules(account_id, token)
+    delete_adblock_policy(rules, account_id, token)
+    lists = utils.get_lists(account_id, token)
     lists = utils.filter_adblock_lists(lists)
-    delete_adblock_list(lists)
+    delete_adblock_list(lists, account_id, token)
 
 
 if __name__ == "__main__":

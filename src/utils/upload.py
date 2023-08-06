@@ -5,7 +5,7 @@ import requests
 from . import utils
 
 
-def get_blocklists(hosts_path: str = None):
+def get_blocklists(hosts_path: str = 'blocklists'):
     blocklists = []
     hosts_path = pathlib.Path(hosts_path)
     if hosts_path.is_file():
@@ -18,7 +18,7 @@ def get_blocklists(hosts_path: str = None):
     return blocklists
 
 
-def apply_whitelists(blocklists, whitelist: str = None):
+def apply_whitelists(blocklists, whitelist: str = 'whitelists'):
     # If whitelist is a file, convert it to a list.
     # If whitelist is a directory, convert all files in it to a list and combine them.
     # If it does not exist, return the original blocklists
@@ -102,14 +102,17 @@ def create_dns_policy(lists, account_id: str, token: str) -> None:
 
 
 def main():
+
+    account_id = input("Enter your Cloudflare account ID: ")
+    token = input("Enter your Cloudflare API token: ")
+
     blocklists = get_blocklists()
     blocklists = apply_whitelists(blocklists)
     lists = split_list(blocklists)
-    upload_to_cloudflare(lists)
-    cloud_lists = utils.get_lists()
+    upload_to_cloudflare(lists, account_id, token)
+    cloud_lists = utils.get_lists(account_id, token)
     cloud_lists = utils.filter_adblock_lists(cloud_lists)
-    create_dns_policy(cloud_lists)
-
+    create_dns_policy(cloud_lists, account_id, token)
 
 if __name__ == "__main__":
     main()
