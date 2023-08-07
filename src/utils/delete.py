@@ -1,8 +1,10 @@
 # This is a scriprt to undo the changes made by adblock-zerotrust.py
 
-import requests
-import httpx 
 import asyncio
+
+import httpx
+import requests
+
 from . import utils
 
 

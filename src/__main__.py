@@ -2,10 +2,11 @@
 # python -m src.__main__
 # python -m src # also works because __main__ is the default module
 import argparse
+import asyncio
 import os
 from pathlib import Path
 from sys import exit, stderr
-import asyncio
+
 import dotenv
 from loguru import logger
 
@@ -31,7 +32,9 @@ def main():
     # Add arguments
 
     # General arguments
-    argparser.add_argument('--log-level', '-l', help='Log level', default='INFO')  # noqa E501
+    argparser.add_argument(
+        "--log-level", "-l", help="Log level", default="INFO"
+    )  # noqa E501
 
     # Credential arguments
     credential_args.add_argument(
@@ -80,8 +83,6 @@ def main():
     # Set up logging
     set_primary_logger(args.log_level)
     logger.debug(args)
-
-
 
     # Load variables
     global TOKEN
@@ -133,6 +134,7 @@ def delete_from_cloudflare(args):
     lists = utils.get_lists(ACCOUNT_ID, TOKEN)
     lists = utils.filter_adblock_lists(lists)
     asyncio.run(delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN))
+
 
 def set_primary_logger(log_level):
     logger.remove()
