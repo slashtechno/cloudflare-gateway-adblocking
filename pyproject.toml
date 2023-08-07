@@ -18,6 +18,7 @@ python = "^3.10"
 requests = "^2.31.0"
 loguru = "^0.7.0"
 python-dotenv = "^1.0.0"
+httpx = "^0.24.1"
 
 
 [tool.poetry.group.dev.dependencies]
