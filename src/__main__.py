@@ -5,7 +5,7 @@ import argparse
 import os
 from pathlib import Path
 from sys import exit, stderr
-
+import asyncio
 import dotenv
 from loguru import logger
 
@@ -78,7 +78,7 @@ def main():
         "--whitelists",
         "-w",
         help="Either a whitelist hosts file or a directory containing whitelist hosts files",  # noqa E501
-        default="whitelist.txt",  # Not really needed because the apply_whitelists function will default to this  # noqa: E501
+        default="whitelists",  # Not really needed because the apply_whitelists function will default to this  # noqa: E501
     )
     # Add subcommand: delete
     delete_parser = subparsers.add_parser(
@@ -114,7 +114,7 @@ def upload_to_cloudflare(args):
     blocklists = upload.get_blocklists(args.blocklists)
     blocklists = upload.apply_whitelists(blocklists, args.whitelists)
     lists = upload.split_list(blocklists)
-    upload.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN)
+    asyncio.run(upload.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN))
     cloud_lists = utils.get_lists(ACCOUNT_ID, TOKEN)
     cloud_lists = utils.filter_adblock_lists(cloud_lists)
     upload.create_dns_policy(cloud_lists, ACCOUNT_ID, TOKEN)
@@ -126,7 +126,7 @@ def delete_from_cloudflare(args):
     delete.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
     lists = utils.get_lists(ACCOUNT_ID, TOKEN)
     lists = utils.filter_adblock_lists(lists)
-    delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
+    asyncio.run(delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN))
 
 
 if __name__ == "__main__":
