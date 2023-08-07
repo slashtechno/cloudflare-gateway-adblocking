@@ -44,3 +44,5 @@ For example:
 To delete the blocklists from Cloudflare and delete the firewall policy, use the `delete` subcommand.  
 For example:  
 `cloudflare-gateway-adblocking delete`  
+### Help  
+For help, use the `--help` flag.  

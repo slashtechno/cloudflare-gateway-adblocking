@@ -16,20 +16,6 @@ ACCOUNT_ID = None
 
 
 def main():
-    # Setup logging
-    logger.remove()
-    # ^10 is a formatting directive to center with a padding of 10
-    logger_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> |<level>{level: ^10}</level>| <level>{message}</level>"  # noqa E501
-    logger.add(stderr, format=logger_format, colorize=True, level="DEBUG")
-
-    # Load .env if it exists
-    # This must precede the argparse setup as env variables are used as default values
-    if Path(".env").is_file():
-        dotenv.load_dotenv()
-        logger.info("Loaded .env file")
-    else:
-        logger.info("No .env file found")
-
     # Parse arguments
 
     # Set up argparse
@@ -43,17 +29,20 @@ def main():
     credential_args = argparser.add_argument_group("Cloudflare Credentials")
 
     # Add arguments
+
+    # General arguments
+    argparser.add_argument('--log-level', '-l', help='Log level', default='INFO')  # noqa E501
+
+    # Credential arguments
     credential_args.add_argument(
         "--account-id",
         "-a",
         help="Cloudflare account ID - environment variable: CLOUDFLARE_ACCOUNT_ID",
-        default=os.environ.get("CLOUDFLARE_ACCOUNT_ID"),
     )
     credential_args.add_argument(
         "--token",
         "-t",
         help="Cloudflare API token - environment variable: CLOUDFLARE_TOKEN",
-        default=os.environ.get("CLOUDFLARE_TOKEN"),
     )
 
     # Add subcommands
@@ -88,19 +77,35 @@ def main():
 
     args = argparser.parse_args()
 
+    # Set up logging
+    set_primary_logger(args.log_level)
     logger.debug(args)
+
+
 
     # Load variables
     global TOKEN
     global ACCOUNT_ID
     TOKEN = args.token
     ACCOUNT_ID = args.account_id
-    # Check if variables are set
+
+    # Check if credentials are set, if they are not, attempt to load from environment variables and .env  # noqa E501
     if TOKEN is None or ACCOUNT_ID is None:
-        logger.error(
-            "No environment variables found. Please create a .env file or .envrc file"
-        )  # noqa E501
-        exit(1)
+        logger.info("No credentials provided with flags")
+        if Path(".env").is_file():
+            logger.debug("Loading .env")
+            dotenv.load_dotenv()
+        else:
+            logger.debug("No .env file found")
+        try:
+            TOKEN = os.environ["CLOUDFLARE_TOKEN"]
+            ACCOUNT_ID = os.environ["CLOUDFLARE_ACCOUNT_ID"]
+            logger.info("Loaded credentials from environment variables")
+        except KeyError:
+            logger.error("No credentials provided")
+            argparser.print_help()
+            exit(1)
+
     try:
         args.func(args)
     except AttributeError:
@@ -127,6 +132,12 @@ def delete_from_cloudflare(args):
     lists = utils.get_lists(ACCOUNT_ID, TOKEN)
     lists = utils.filter_adblock_lists(lists)
     delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN)
+
+def set_primary_logger(log_level):
+    logger.remove()
+    # ^10 is a formatting directive to center with a padding of 10
+    logger_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> |<level>{level: ^10}</level>| <level>{message}</level>"  # noqa E501
+    logger.add(stderr, format=logger_format, colorize=True, level=log_level)
 
 
 if __name__ == "__main__":
