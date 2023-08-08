@@ -1,4 +1,5 @@
 # Cloudflare Gateway Adblocking  
+![PyPI](https://img.shields.io/pypi/v/cloudflare-gateway-adblocking?style=for-the-badge&logo=python&link=https%3A%2F%2Fpypi.org%2Fproject%2Fcloudflare-gateway-adblocking%2F)    
 Serverless adblocking via Cloudflare Zero Trust Gateway  
 
 ### What is this?  
