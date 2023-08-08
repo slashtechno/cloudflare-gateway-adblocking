@@ -2,10 +2,11 @@
 # python -m src.__main__
 # python -m src # also works because __main__ is the default module
 import argparse
+import asyncio
 import os
 from pathlib import Path
 from sys import exit, stderr
-import asyncio
+
 import dotenv
 from loguru import logger
 

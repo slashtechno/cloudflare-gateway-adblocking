@@ -1,8 +1,8 @@
+import asyncio
 import pathlib
 
-import requests
-import asyncio
 import httpx
+import requests
 
 from . import utils
 
@@ -48,13 +48,11 @@ def split_list(blocklists):
     return lists
 
 
-async def upload_to_cloudflare(lists, account_id: str, token: str) -> None: 
+async def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
     async with httpx.AsyncClient() as client:
         for i, lst in enumerate(lists):
             list_name = f"adblock-list-{i + 1}"
-            url = (
-                f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists"
-            )
+            url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists"
             headers = {
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json",
@@ -77,7 +75,6 @@ async def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
             if response.status_code != 200:
                 print(f"Error uploading {list_name}: {response.text}")
                 exit(1)
-
 
 
 def create_dns_policy(lists, account_id: str, token: str) -> None:
