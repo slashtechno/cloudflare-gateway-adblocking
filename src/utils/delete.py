@@ -1,5 +1,3 @@
-# This is a scriprt to undo the changes made by adblock-zerotrust.py
-
 import asyncio
 
 import httpx
@@ -17,7 +15,6 @@ async def delete_adblock_list(lists: dict, account_id: str, token: str):
                     "Authorization": f"Bearer {token}",
                     "Content-Type": "application/json",
                 }
-                # response = requests.delete(url, headers=headers, timeout=10)
                 response = await client.delete(url, headers=headers, timeout=10)
                 if response.status_code != 200:
                     print(f"Error deleting list: {response.text}")
