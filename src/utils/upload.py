@@ -1,5 +1,7 @@
+import asyncio
 import pathlib
 
+import httpx
 import requests
 
 from . import utils
@@ -46,33 +48,33 @@ def split_list(blocklists):
     return lists
 
 
-def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
-    for i, lst in enumerate(lists):
-        list_name = f"adblock-list-{i + 1}"
-        url = (
-            f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists"
-        )
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        }
+async def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
+    async with httpx.AsyncClient() as client:
+        for i, lst in enumerate(lists):
+            list_name = f"adblock-list-{i + 1}"
+            url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists"
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            }
 
-        data = {
-            "name": list_name,
-            "type": "DOMAIN",
-            "description": "A blocklist of ad domains",
-            # Writing this program, I have noticed how powerful list comprehension is.
-            "items": [
-                {
-                    "value": x,
-                }
-                for x in lst
-            ],
-        }
-        response = requests.post(url, headers=headers, json=data, timeout=10)
-        print(f"Uploaded {list_name} to Cloudflare")
-        if response.status_code != 200:
-            print(f"Error uploading {list_name}: {response.text}")
+            data = {
+                "name": list_name,
+                "type": "DOMAIN",
+                "description": "A blocklist of ad domains",
+                # Writing this program, I have noticed how powerful list comprehension is.
+                "items": [
+                    {
+                        "value": x,
+                    }
+                    for x in lst
+                ],
+            }
+            response = await client.post(url, headers=headers, json=data)
+            print(f"Uploaded {list_name} to Cloudflare")
+            if response.status_code != 200:
+                print(f"Error uploading {list_name}: {response.text}")
+                exit(1)
 
 
 def create_dns_policy(lists, account_id: str, token: str) -> None:
@@ -108,7 +110,7 @@ def main():
     blocklists = get_blocklists()
     blocklists = apply_whitelists(blocklists)
     lists = split_list(blocklists)
-    upload_to_cloudflare(lists, account_id, token)
+    asyncio.run(upload_to_cloudflare(lists, account_id, token))
     cloud_lists = utils.get_lists(account_id, token)
     cloud_lists = utils.filter_adblock_lists(cloud_lists)
     create_dns_policy(cloud_lists, account_id, token)
