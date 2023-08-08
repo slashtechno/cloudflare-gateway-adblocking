@@ -78,7 +78,6 @@ def convert_to_list(file: pathlib.Path) -> list:
             for match in matches
             if match and match.group(1) not in loopback
         ]
-        # print(f"First 5 hosts: {hosts[:5]}")
         return hosts
 
 
