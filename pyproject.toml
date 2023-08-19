@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cloudflare-gateway-adblocking"
-version = "0.1.1"
+version = "0.1.2"
 description = "Serverless adblocking via Cloudflare Zero Trust Gateway"
 authors = ["slastechno <77907286+slashtechno@users.noreply.github.com>"]
 license = "MIT"
