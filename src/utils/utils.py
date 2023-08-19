@@ -85,13 +85,13 @@ def convert_to_list(file: pathlib.Path) -> list:
 # General Utils
 
 
-def get_lists(account_id, token) -> dict:
+def get_lists(account_id, token, timeout = 10) -> dict:
     url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/lists"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
-    response = requests.get(url, headers=headers, timeout=10)
+    response = requests.get(url, headers=headers, timeout=timeout)
     if response.status_code != 200:
         print(f"Error getting lists: {response.text}")
     return response.json()["result"]
@@ -111,13 +111,13 @@ def filter_adblock_lists(lists: dict) -> dict:
     return adblock_lists
 
 
-def get_gateway_rules(account_id, token) -> dict:
+def get_gateway_rules(account_id, token, timeout = 10) -> dict:
     url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/rules"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
-    response = requests.get(url, headers=headers, timeout=10)
+    response = requests.get(url, headers=headers, timeout=timeout)
     if response.status_code != 200:
         print(f"Error getting lists: {response.text}")
     return response.json()["result"]

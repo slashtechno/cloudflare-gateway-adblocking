@@ -48,7 +48,7 @@ def split_list(blocklists):
     return lists
 
 
-async def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
+async def upload_to_cloudflare(lists, account_id: str, token: str, timeout:int = 10) -> None:
     async with httpx.AsyncClient() as client:
         for i, lst in enumerate(lists):
             list_name = f"adblock-list-{i + 1}"
@@ -70,14 +70,14 @@ async def upload_to_cloudflare(lists, account_id: str, token: str) -> None:
                     for x in lst
                 ],
             }
-            response = await client.post(url, headers=headers, json=data)
+            response = await client.post(url, headers=headers, json=data, timeout=timeout)
             print(f"Uploaded {list_name} to Cloudflare")
             if response.status_code != 200:
                 print(f"Error uploading {list_name}: {response.text}")
                 exit(1)
 
 
-def create_dns_policy(lists, account_id: str, token: str) -> None:
+def create_dns_policy(lists, account_id: str, token: str, timeout = 10) -> None:
     url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/rules"
     headers = {
         "Authorization": f"Bearer {token}",
@@ -98,7 +98,7 @@ def create_dns_policy(lists, account_id: str, token: str) -> None:
         "traffic": traffic,
         "enabled": True,
     }
-    response = requests.post(url, headers=headers, json=data, timeout=10)
+    response = requests.post(url, headers=headers, json=data, timeout=timeout)
     if response.status_code != 200:
         print(f"Error creating DNS policy: {response.text}")
 

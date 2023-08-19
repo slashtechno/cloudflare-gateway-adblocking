@@ -35,7 +35,12 @@ def main():
     argparser.add_argument(
         "--log-level", "-l", help="Log level", default="INFO"
     )  # noqa E501
-
+    argparser.add_argument(
+            "--timeout",
+            help="Timeout for requests",
+            default=None,
+            type = int
+            )
     # Credential arguments
     credential_args.add_argument(
         "--account-id",
@@ -121,19 +126,19 @@ def upload_to_cloudflare(args):
     blocklists = upload.get_blocklists(args.blocklists)
     blocklists = upload.apply_whitelists(blocklists, args.whitelists)
     lists = upload.split_list(blocklists)
-    asyncio.run(upload.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN))
-    cloud_lists = utils.get_lists(ACCOUNT_ID, TOKEN)
+    asyncio.run(upload.upload_to_cloudflare(lists, ACCOUNT_ID, TOKEN, args.timeout))
+    cloud_lists = utils.get_lists(ACCOUNT_ID, TOKEN, args.timeout)
     cloud_lists = utils.filter_adblock_lists(cloud_lists)
-    upload.create_dns_policy(cloud_lists, ACCOUNT_ID, TOKEN)
+    upload.create_dns_policy(cloud_lists, ACCOUNT_ID, TOKEN, args.timeout)
 
 
 def delete_from_cloudflare(args):
     logger.info("Deleting from Cloudflare")
-    rules = utils.get_gateway_rules(ACCOUNT_ID, TOKEN)
-    delete.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN)
-    lists = utils.get_lists(ACCOUNT_ID, TOKEN)
+    rules = utils.get_gateway_rules(ACCOUNT_ID, TOKEN, timeout = args.timeout)
+    delete.delete_adblock_policy(rules, ACCOUNT_ID, TOKEN, args.timeout)
+    lists = utils.get_lists(ACCOUNT_ID, TOKEN, args.timeout)
     lists = utils.filter_adblock_lists(lists)
-    asyncio.run(delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN))
+    asyncio.run(delete.delete_adblock_list(lists, ACCOUNT_ID, TOKEN, args.timeout))
 
 
 def set_primary_logger(log_level):

@@ -6,7 +6,7 @@ import requests
 from . import utils
 
 
-async def delete_adblock_list(lists: dict, account_id: str, token: str):
+async def delete_adblock_list(lists: dict, account_id: str, token: str, timeout:int = 10):
     try:
         async with httpx.AsyncClient() as client:
             for lst in lists:
@@ -15,7 +15,7 @@ async def delete_adblock_list(lists: dict, account_id: str, token: str):
                     "Authorization": f"Bearer {token}",
                     "Content-Type": "application/json",
                 }
-                response = await client.delete(url, headers=headers, timeout=10)
+                response = await client.delete(url, headers=headers, timeout=timeout)
                 if response.status_code != 200:
                     print(f"Error deleting list: {response.text}")
                 else:
@@ -27,7 +27,7 @@ async def delete_adblock_list(lists: dict, account_id: str, token: str):
             raise e
 
 
-def delete_adblock_policy(policies: dict, account_id: str, token: str):
+def delete_adblock_policy(policies: dict, account_id: str, token: str, timeout:int = 10):
     for policy in policies:
         if policy["name"] == "Block Ads":
             url = f'https://api.cloudflare.com/client/v4/accounts/{account_id}/gateway/rules/{policy["id"]}'
@@ -35,7 +35,7 @@ def delete_adblock_policy(policies: dict, account_id: str, token: str):
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json",
             }
-            response = requests.delete(url, headers=headers, timeout=10)
+            response = requests.delete(url, headers=headers, timeout=timeout)
             if response.status_code != 200:
                 print(f"Error deleting policy: {response.text}")
             else:
