@@ -73,13 +73,13 @@ def convert_to_list(file: pathlib.Path) -> list:
             re.search(r"^(?:127\.0\.0\.1|0\.0\.0\.0|::1)\s+(.+?)(?:\s+#.+)?$", line)
             for line in f
         ]
-        hosts = [
+        hosts = { 
             match.group(1)
             for match in matches
             if match and match.group(1) not in loopback
-        ]
+        }
         # print(f"First 5 hosts: {hosts[:5]}")
-        return hosts
+        return list(hosts)
 
 
 # General Utils

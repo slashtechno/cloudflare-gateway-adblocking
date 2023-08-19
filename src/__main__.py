@@ -95,7 +95,7 @@ def main():
         logger.info("No credentials provided with flags")
         if Path(".env").is_file():
             logger.debug("Loading .env")
-            dotenv.load_dotenv()
+            dotenv.load_dotenv(Path(Path.cwd() / ".env"))
         else:
             logger.debug("No .env file found")
         try:
@@ -106,7 +106,8 @@ def main():
             logger.error("No credentials provided")
             argparser.print_help()
             exit(1)
-
+    # For debugging, print cwd
+    logger.debug(f"Current working directory: {Path.cwd()}")
     try:
         args.func(args)
     except AttributeError:
