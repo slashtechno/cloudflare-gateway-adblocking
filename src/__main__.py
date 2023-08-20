@@ -11,6 +11,7 @@ import dotenv
 from loguru import logger
 
 from .utils import delete, upload, utils
+from src.utils.download import Downloader
 
 TOKEN = None
 ACCOUNT_ID = None
