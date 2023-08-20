@@ -1,0 +1,41 @@
+name: Add Rules to Cloudflare Gateway 
+on:
+  workflow_dispatch:
+jobs:
+  run:
+    name: Cloudflare Gateway 
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11.3
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Set up Environment Variables
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          
+      - name: Delete Older Rules
+        run: python -m src delete
+
+      - name: Upload New Rules
+        run: python -m src upload 
+        
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 1
