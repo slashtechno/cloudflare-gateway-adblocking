@@ -123,6 +123,8 @@ def main():
 
 def upload_to_cloudflare(args):
     logger.info("Uploading to Cloudflare")
+    downloader = Downloader("hosts-urls.ini", "./blocklists/hosts.txt")
+    downloader.download_hosts()
     blocklists = upload.get_blocklists(args.blocklists)
     blocklists = upload.apply_whitelists(blocklists, args.whitelists)
     lists = upload.split_list(blocklists)
