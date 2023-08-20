@@ -20,18 +20,19 @@ jobs:
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
-      
-      - name: Set up Environment Variables
+          
+      - name: Delete Older Rules
+        run: python -m src delete
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Upload New Rules
+        run: python -m src upload 
         env:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           
-      - name: Delete Older Rules
-        run: python -m src delete
-
-      - name: Upload New Rules
-        run: python -m src upload 
-        
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
         with:
