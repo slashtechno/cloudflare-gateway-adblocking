@@ -23,7 +23,7 @@ httpx = "^0.24.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.281"
-black = "^23.7.0"
+black = ">=23.7,<25.0"
 
 [build-system]
 requires = ["poetry-core"]
