@@ -1,0 +1,86 @@
+# =============================================================================
+# Cloudflare Gateway Adblocking —— 每日自动同步配置
+# =============================================================================
+# 本文件是自动化流水线的唯一配置入口：
+#   * 增删规则源      -> 编辑 sources:
+#   * 放行误杀域名    -> 编辑 whitelist:
+#   * 调护栏/网络参数 -> 编辑 settings:
+#   * 调整更新频率    -> 不在此处！见 .github/workflows/sync-gateway-lists.yml 的 cron
+# 各字段完整说明见 docs/automation.md
+# =============================================================================
+
+settings:
+  # ---- Cloudflare Gateway 资源命名约定 -------------------------------------
+  # 以下四项需与团队里已存在的 Gateway 资源保持一致，通常无需修改。
+  # 修改后旧列表不会被清理，请务必谨慎。
+  list_name_prefix: adblock-list          # 列表名前缀，实际形如 adblock-list-1
+  list_type: DOMAIN                       # Gateway 列表类型
+  list_description: A blocklist of ad domains
+  policy_name: Block Ads                  # DNS 防火墙策略名
+  chunk_size: 1000                        # 单个列表最多容纳的域名数（Gateway 上限）
+
+  # ---- 网络与重试 ----------------------------------------------------------
+  timeout: 30                             # 单次 HTTP 请求超时（秒）
+  max_retries: 3                          # 失败后的最大重试次数
+  backoff_base: 1.5                       # 指数退避基数：间隔 = base ** attempt（秒）
+  max_concurrency: 5                      # 写入 Cloudflare 时的最大并发数
+  user_agent: >-
+    cloudflare-gateway-adblocking-sync/1.0
+    (+https://github.com/slashtechno/cloudflare-gateway-adblocking)
+
+  # ---- 安全护栏 ------------------------------------------------------------
+  # 规则源偶发返回不完整内容时，这些阈值可避免把线上策略清空。
+  min_domains_per_source: 100             # 单个源解析结果低于此值 -> 判定该源异常
+  fail_safe_min_domains: 1000             # 最终域名总数低于此值 -> 中止，不写入 Gateway
+  max_domains: 400000                     # 最终域名总数超过此值 -> 中止（防止内存/配额失控）
+  max_removal_ratio: 0.5                  # 相对云端基线删除比例超过此比例 -> 中止
+  fail_on_source_error: false             # false：部分源失败仍继续同步；true：任一源失败即中止
+
+# =============================================================================
+# 黑名单规则源
+# =============================================================================
+# 字段说明：
+#   name    - 唯一标识，出现在日志与执行报告的 source 列中
+#   url     - 规则文件直链（仅支持 http/https）
+#   format  - hosts | domains | adblock | auto
+#               hosts   : 0.0.0.0 ads.example.com
+#               domains : 每行一个裸域名
+#               adblock : ||ads.example.com^ 形式的过滤规则
+#               auto    : 自动嗅探以上三种（推荐用于未知来源）
+#   enabled - false 时跳过该源，无需删除配置
+# =============================================================================
+sources:
+  - name: stevenblack
+    url: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+    format: hosts
+    enabled: true
+
+  - name: oisd-small
+    url: https://small.oisd.nl/
+    format: domains
+    enabled: true
+
+  - name: adguard-dns
+    url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+    format: adblock
+    enabled: true
+
+  # 更多可选源（默认关闭，需要时把 enabled 改成 true 即可）
+  - name: adaway
+    url: https://raw.githubusercontent.com/AdAway/adaway.github.io/master/hosts.txt
+    format: hosts
+    enabled: false
+
+# =============================================================================
+# 白名单（命中后从黑名单中剔除）
+# =============================================================================
+# enabled: false 时整段失效
+# sources: 与 sources 段同结构的远程白名单源
+# inline : 直接写在这里的域名，支持子域名匹配（example.com 会放行 a.example.com）
+# =============================================================================
+whitelist:
+  enabled: true
+  sources: []
+  inline: []
+    # - example.com
+    # - cdn.example.net
