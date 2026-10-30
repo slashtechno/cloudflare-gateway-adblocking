@@ -12,6 +12,7 @@ packages = [{include = "src"}]
 
 [tool.poetry.scripts]
 cloudflare-gateway-adblocking = "src.__main__:main"
+cloudflare-gateway-adblocking-sync = "src.automation.__main__:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -19,6 +20,7 @@ requests = "^2.31.0"
 loguru = "^0.7.0"
 python-dotenv = "^1.0.0"
 httpx = "^0.24.1"
+pyyaml = "^6.0"
 
 
 [tool.poetry.group.dev.dependencies]

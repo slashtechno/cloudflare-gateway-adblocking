@@ -9,3 +9,7 @@ tmp.py
 dist/
 .ruff_cache/
 hosts.txt
+
+# 自动化同步产物（详见 docs/automation.md）
+sync-report.json
+sync-domains.txt

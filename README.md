@@ -45,6 +45,36 @@ For example:
 To delete the blocklists from Cloudflare and delete the firewall policy, use the `delete` subcommand.  
 For example:  
 `cloudflare-gateway-adblocking delete`  
+### Daily automatic sync (GitHub Actions)  
+A ready-made workflow keeps your Gateway lists fresh every day with no manual steps: it fetches
+the rule sources defined in `config/sources.yml`, cleans and de-duplicates them, syncs them to
+Cloudflare Gateway idempotently, records how many domains were added/removed, and opens an
+alerting issue when something fails.
+
+Getting started:
+
+1. Add two repository secrets (**Settings → Secrets and variables → Actions**):
+
+   | Secret | Description |
+   | --- | --- |
+   | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+   | `CLOUDFLARE_TOKEN` | API token with `Zero Trust: Edit`, `Account Firewall Access Rules: Edit`, `Access: Apps and Policies: Edit` |
+
+2. Review the rule sources in `config/sources.yml` — sources can be freely added, removed or
+   disabled with `enabled: false`.
+
+3. Trigger it manually once (**Actions → Sync Gateway Adblock Lists → Run workflow**) to confirm
+   everything works. It then runs automatically every day; adjust the cron expression in
+   `.github/workflows/sync-gateway-lists.yml` to change the frequency.
+
+   > GitHub disables `schedule` triggers after 60 days of repository inactivity.
+
+Every run produces a Markdown job summary, a `sync-report.json` (status, per-source detail,
+`domains_total` / `domains_added` / `domains_removed`, write counters) and a `gateway-sync-report`
+artifact retained for 90 days.
+
+Full reference — all inputs, log samples and troubleshooting: [docs/automation.md](docs/automation.md).
+
 ### Help  
 For help, use the `--help` flag.  
 ### Contributing  

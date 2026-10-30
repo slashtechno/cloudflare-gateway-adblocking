@@ -1,0 +1,186 @@
+# 每日自动把广告拦截规则源同步到 Cloudflare Zero Trust Gateway。
+#
+# ── 调整更新频率 ─────────────────────────────────────────────────────────────
+#   改下面 on.schedule 的 cron 即可。cron 为 UTC 时间，且 GitHub Actions 不支持
+#   在此处引用变量，所以只能直接编辑这一行：
+#     ┌─── 分钟 (0-59)
+#     │  ┌─── 小时 (0-23)
+#     │  │  ┌─── 日 (1-31)
+#     │  │  │  ┌─── 月 (1-12)
+#     │  │  │  │  ┌─── 星期 (0-6, 0=周日)
+#     *  *  *  *  *
+#   默认每天 UTC 03:17（避开整点高峰）；改成每 12 小时：'17 3,15 * * *'。
+#   注意：仓库若连续 60 天没有任何提交，GitHub 会自动停用 schedule 触发器。
+# ─────────────────────────────────────────────────────────────────────────────
+name: Sync Gateway Adblock Lists
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '试运行：只解析与差分，不写入 Cloudflare'
+        type: boolean
+        default: false
+      force:
+        description: '强制执行：忽略删除比例护栏'
+        type: boolean
+        default: false
+      log_level:
+        description: '日志级别'
+        type: choice
+        default: INFO
+        options: [DEBUG, INFO, WARNING, ERROR]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: gateway-adblock-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Fetch, normalize and sync lists
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      status: ${{ steps.result.outputs.status }}
+      failure_reason: ${{ steps.result.outputs.failure_reason }}
+      domains_total: ${{ steps.result.outputs.domains_total }}
+      domains_added: ${{ steps.result.outputs.domains_added }}
+      domains_removed: ${{ steps.result.outputs.domains_removed }}
+      run_url: ${{ steps.result.outputs.run_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .
+
+      - name: Run Gateway list sync
+        id: run
+        # 凭据只经过 env 注入，绝不出现在命令行参数里；
+        # GITHUB_STEP_SUMMARY 由 Actions 按步骤自动注入，无需手工指定
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          python -m src.automation \
+            --config config/sources.yml \
+            --report-path sync-report.json \
+            --domains-path sync-domains.txt \
+            --log-level ${{ inputs.log_level || 'INFO' }} \
+            ${{ inputs.dry_run && '--dry-run' || '' }} \
+            ${{ inputs.force && '--force' || '' }}
+
+      - name: Export run result
+        id: result
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          import os
+
+          report = {}
+          try:
+              with open("sync-report.json", encoding="utf-8") as handle:
+                  report = json.load(handle)
+          except FileNotFoundError:
+              print("sync-report.json not found; nothing to export")
+
+          def clean(value):
+              return str(value if value is not None else "unknown").replace("\n", " ").replace("\r", " ")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"status={clean(report.get('status', 'failure'))}\n")
+              handle.write(f"failure_reason={clean(report.get('failure_reason'))}\n")
+              handle.write(f"domains_total={report.get('domains_total', 0)}\n")
+              handle.write(f"domains_added={report.get('domains_added', 0)}\n")
+              handle.write(f"domains_removed={report.get('domains_removed', 0)}\n")
+              handle.write(f"run_url={clean(report.get('run_url') or '')}\n")
+          PY
+
+      - name: Upload audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-sync-report
+          path: |
+            sync-report.json
+            sync-domains.txt
+          if-no-files-found: warn
+          retention-days: 90
+
+  notify:
+    name: Open failure issue
+    needs: sync
+    runs-on: ubuntu-latest
+    # cancelled 不算失败，只有 failure / aborted（护栏触发）才告警
+    if: ${{ always() && contains(fromJSON('["failure", "aborted"]'), needs.sync.outputs.status) }}
+    permissions:
+      issues: write
+    steps:
+      - name: Create or update failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[Automation] Gateway adblock list sync failed';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const status = '${{ needs.sync.outputs.status }}';
+            const reason = '${{ needs.sync.outputs.failure_reason }}' || 'unknown';
+            const total = '${{ needs.sync.outputs.domains_total }}';
+            const added = '${{ needs.sync.outputs.domains_added }}';
+            const removed = '${{ needs.sync.outputs.domains_removed }}';
+            const reportUrl = '${{ needs.sync.outputs.run_url }}' || context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId;
+
+            const body = [
+              '## 自动同步失败告警',
+              '',
+              `- **状态**：\`${status}\``,
+              `- **失败原因**：${reason}`,
+              `- **触发方式**：\`${context.eventName}\``,
+              `- **运行记录**：${reportUrl}`,
+              `- **分支 / 提交**：\`${context.ref}\` / \`${(context.sha || '').slice(0, 7)}\``,
+              '',
+              `本次域名统计：总数 ${total}，新增 ${added}，移除 ${removed}（Cloudflare 未发生写入或写入中止）。`,
+              '',
+              '> 本 Issue 由 `sync-gateway-lists.yml` 自动创建。失败解决后可关闭；若再次失败会在同一 Issue 下追加评论。',
+            ].join('\n');
+
+            const label = 'gateway-sync-failure';
+            try {
+              await github.rest.issues.createLabel({ owner, repo, name: label, color: 'b60205', description: 'Automated Gateway adblock sync failure' });
+            } catch (error) {
+              // 标签多半已存在，忽略即可
+              core.debug(`label creation skipped: ${error.message}`);
+            }
+
+            const existing = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              labels: label,
+              state: 'open',
+              per_page: 10,
+            });
+            const issue = existing.data.find((item) => item.title === title);
+
+            if (issue) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: issue.number, body });
+              core.info(`Commented on existing issue #${issue.number}`);
+            } else {
+              const created = await github.rest.issues.create({ owner, repo, title, labels: [label], body });
+              core.info(`Created issue #${created.data.number}`);
+            }
